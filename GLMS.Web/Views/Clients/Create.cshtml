@@ -1,0 +1,54 @@
+﻿@model Client
+@{
+    ViewData["Title"] = "Add Client";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">New Client</h3>
+            </div>
+            <div class="card-body">
+                <form asp-controller="Clients" asp-action="Create" method="post">
+                    <div asp-validation-summary="All" class="alert alert-danger d-none" id="val-summary"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label required"></label>
+                        <input asp-for="Name" class="form-control" placeholder="e.g. Acme Logistics Ltd" />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ContactDetails" class="form-label required"></label>
+                        <input asp-for="ContactDetails" class="form-control" placeholder="e.g. info@acme.com / +27 11 000 0000" />
+                        <span asp-validation-for="ContactDetails" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Region" class="form-label required"></label>
+                        <input asp-for="Region" class="form-control" placeholder="e.g. Gauteng, Western Cape" />
+                        <span asp-validation-for="Region" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ti ti-device-floppy me-1"></i> Save Client
+                        </button>
+                        <a class="btn btn-ghost-secondary"
+                           asp-controller="Clients" asp-action="Index">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Show validation summary if it has content
+        const summary = document.getElementById('val-summary');
+        if (summary && summary.querySelectorAll('li').length > 0)
+            summary.classList.remove('d-none');
+    </script>
+}

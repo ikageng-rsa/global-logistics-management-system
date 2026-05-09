@@ -1,0 +1,40 @@
+﻿@model Client
+@{
+    ViewData["Title"] = "Delete Client";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-5">
+        <div class="card border-danger">
+            <div class="card-header bg-danger-lt">
+                <h3 class="card-title text-danger">
+                    <i class="ti ti-alert-triangle me-2"></i> Confirm Deletion
+                </h3>
+            </div>
+            <div class="card-body">
+                <p>Are you sure you want to delete client <strong>@Model.Name</strong>?</p>
+                <p class="text-muted small">
+                    This action cannot be undone. All associated data may be affected.
+                </p>
+
+                <dl class="row">
+                    <dt class="col-5 text-muted">Name</dt>
+                    <dd class="col-7">@Model.Name</dd>
+
+                    <dt class="col-5 text-muted">Region</dt>
+                    <dd class="col-7">@Model.Region</dd>
+                </dl>
+            </div>
+            <div class="card-footer d-flex gap-2">
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <button type="submit" class="btn btn-danger">
+                        <i class="ti ti-trash me-1"></i> Yes, Delete
+                    </button>
+                </form>
+                <a href="/Clients" class="btn btn-ghost-secondary"
+                   asp-controller="Clients" asp-action="Index">Cancel</a>
+            </div>
+        </div>
+    </div>
+</div>

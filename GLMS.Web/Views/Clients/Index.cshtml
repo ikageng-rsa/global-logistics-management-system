@@ -1,0 +1,72 @@
+﻿@model IEnumerable<Client>
+@{
+    ViewData["Title"] = "Clients";
+}
+
+<div class="row mb-3">
+    <div class="col">
+        <a class="btn btn-primary"
+               asp-controller="Clients" asp-action="Create">
+            <i class="ti ti-plus me-1"></i> Add Client
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">All Clients</h3>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table table-hover">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Contact Details</th>
+                    <th>Region</th>
+                    <th>Contracts</th>
+                    <th class="w-1">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var client in Model)
+                {
+                    <tr>
+                        <td class="text-muted">@client.Id</td>
+                        <td>@client.Name</td>
+                        <td class="text-muted">@client.ContactDetails</td>
+                        <td>
+                            <span class="badge bg-blue-lt">@client.Region</span>
+                        </td>
+                        <td>@client.Contracts.Count()</td>
+                        <td>
+                            <div class="btn-group">
+                                <a class="btn btn-sm btn-ghost-secondary"
+                                    asp-controller="Clients" asp-action="Details" asp-route-id="@client.Id">
+                                    <i class="ti ti-eye"></i>
+                                </a>
+                                <a class="btn btn-sm btn-ghost-secondary"
+                                       asp-controller="Clients" asp-action="Edit" asp-route-id="@client.Id">
+                                    <i class="ti ti-pencil"></i>
+                                </a>
+                                <a class="btn btn-sm btn-ghost-danger"
+                                       asp-controller="Clients" asp-action="Delete" asp-route-id="@client.Id">
+                                    <i class="ti ti-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            <i class="ti ti-users-off fs-2 d-block mb-2"></i>
+                            No clients found. Add your first client.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

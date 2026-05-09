@@ -1,0 +1,40 @@
+﻿@model Client
+@{
+    ViewData["Title"] = "Client Details";
+}
+
+<div class="row">
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="ti ti-user me-2 text-blue"></i>@Model.Name
+                </h3>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-5 text-muted">ID</dt>
+                    <dd class="col-7">@Model.Id</dd>
+
+                    <dt class="col-5 text-muted">Contact</dt>
+                    <dd class="col-7">@Model.ContactDetails</dd>
+
+                    <dt class="col-5 text-muted">Region</dt>
+                    <dd class="col-7">
+                        <span class="badge bg-blue-lt">@Model.Region</span>
+                    </dd>
+
+                    <dt class="col-5 text-muted">Contracts</dt>
+                    <dd class="col-7">@Model.Contracts.Count()</dd>
+                </dl>
+            </div>
+            <div class="card-footer d-flex gap-2">
+                <a href="/Clients/Edit/@Model.Id" class="btn btn-primary btn-sm">
+                    <i class="ti ti-pencil me-1"></i> Edit
+                </a>
+                <a class="btn btn-ghost-secondary btn-sm"
+                   asp-controller="Clients" asp-action="Index">Back</a>
+            </div>
+        </div>
+    </div>
+</div>
