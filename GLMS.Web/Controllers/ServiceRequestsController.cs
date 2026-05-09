@@ -123,9 +123,14 @@ namespace GLMS.Web.Controllers
             // Only show Active contracts in the dropdown
             var activeContracts = _contractRepository.GetAll()
                 .Where(c => c.Status == ContractStatus.Active)
+                .Select(c => new
+                {
+                    c.Id,
+                    Label = $"{c.Client!.Name} — {c.ServiceLevel} ({c.StartDate:dd MMM yyyy} to {c.EndDate:dd MMM yyyy})"
+                })
                 .ToList();
 
-            ViewBag.Contracts = new SelectList(activeContracts, "Id", "Id");
+            ViewBag.Contracts = new SelectList(activeContracts, "Id", "Label");
         }
     }
 }
