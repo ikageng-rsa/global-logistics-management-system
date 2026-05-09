@@ -1,5 +1,7 @@
 using GLMS.Web.Data;
 using GLMS.Web.Factories;
+using GLMS.Web.Observers;
+using GLMS.Web.Observers.Contracts;
 using GLMS.Web.Repositories;
 using GLMS.Web.Repositories.Contracts;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +22,11 @@ builder.Services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>(
 
 // Register factory resolver
 builder.Services.AddSingleton<ContractFactoryResolver>();
+
+// Register observers
+builder.Services.AddScoped<IContractObserver, ServiceRequestBlocker>();
+builder.Services.AddScoped<IContractObserver, AuditLogger>();
+builder.Services.AddScoped<ContractSubject>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
