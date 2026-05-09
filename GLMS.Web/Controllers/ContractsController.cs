@@ -5,6 +5,7 @@ using GLMS.Web.Observers;
 using GLMS.Web.Repositories.Contracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace GLMS.Web.Controllers
 {
@@ -31,6 +32,12 @@ namespace GLMS.Web.Controllers
         public IActionResult Index()
         {
             var contracts = _contractRepository.GetAll();
+
+            ViewBag.Clients = new SelectList(
+                _contractRepository.GetAll(),
+                "Id",
+                "Name"
+            );
             return View(contracts);
         }
 
@@ -42,7 +49,7 @@ namespace GLMS.Web.Controllers
             return View(contract);
         }
 
-        [HttpGet("contacts/create")]
+        [HttpGet("contracts/create")]
         public IActionResult Create()
         {
             PopulateClientDropdown();
@@ -81,7 +88,7 @@ namespace GLMS.Web.Controllers
             return View(contract);
         }
 
-        [HttpPost("contracts/edit{id}")]
+        [HttpPost("contracts/edit/{id}")]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(int id, Contract contract)
         {
