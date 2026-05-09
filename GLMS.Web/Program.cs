@@ -1,11 +1,21 @@
 using GLMS.Web.Data;
+using GLMS.Web.Repositories;
+using GLMS.Web.Repositories.Contracts;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Register SQL
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+    )
+);
+
+// Register repositories for dependency injection
+builder.Services.AddScoped<IClientRepository, ClientRepository>();
+builder.Services.AddScoped<IContractRepository, ContractRepository>();
+builder.Services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
