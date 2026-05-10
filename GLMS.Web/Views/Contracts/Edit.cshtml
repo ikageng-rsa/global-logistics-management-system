@@ -1,0 +1,59 @@
+﻿@model Contract
+@{
+    ViewData["Title"] = "Edit Contract";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Edit Contract #@Model.Id</h3>
+            </div>
+            <div class="card-body">
+                <form asp-controller="Contracts" asp-action="Edit" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+
+                    <div class="mb-3">
+                        <label asp-for="ClientId" class="form-label required">Client</label>
+                        @Html.DropDownList("ClientId", ViewBag.Clients as SelectList, new { @class = "form-select" })
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ServiceLevel" class="form-label required"></label>
+                        <select asp-for="ServiceLevel" class="form-select"
+                                asp-items="Html.GetEnumSelectList<ServiceLevel>()"></select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Status" class="form-label required"></label>
+                        <select asp-for="Status" class="form-select"
+                                asp-items="Html.GetEnumSelectList<ContractStatus>()"></select>
+                        <small class="text-muted">
+                            Changing to Expired or On Hold will automatically reject all pending service requests.
+                        </small>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="StartDate" class="form-label required"></label>
+                            <input asp-for="StartDate" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="EndDate" class="form-label required"></label>
+                            <input asp-for="EndDate" type="date" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ti ti-device-floppy me-1"></i> Update Contract
+                        </button>
+                        <a class="btn btn-ghost-secondary"
+                           asp-controller="Contracts" asp-action="Index">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

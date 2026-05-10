@@ -1,0 +1,111 @@
+﻿@model Contract
+@{
+    ViewData["Title"] = "Contract Details";
+}
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="ti ti-file-text me-2 text-blue"></i>Contract #@Model.Id
+                </h3>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-5 text-muted">Client</dt>
+                    <dd class="col-7">@Model.Client?.Name</dd>
+
+                    <dt class="col-5 text-muted">Service Level</dt>
+                    <dd class="col-7">
+                        <span class="badge bg-blue-lt">@Model.ServiceLevel</span>
+                    </dd>
+
+                    <dt class="col-5 text-muted">Status</dt>
+                    <dd class="col-7">
+                        @{
+                            var statusColor = Model.Status switch
+                            {
+                                ContractStatus.Active => "bg-success-lt text-success",
+                                ContractStatus.Expired => "bg-danger-lt text-danger",
+                                ContractStatus.OnHold => "bg-warning-lt text-warning",
+                                _ => "bg-secondary-lt text-secondary"
+                            };
+                        }
+                        <span class="badge @statusColor">@Model.Status</span>
+                    </dd>
+
+                    <dt class="col-5 text-muted">Start Date</dt>
+                    <dd class="col-7">@Model.StartDate.ToString("dd MMM yyyy")</dd>
+
+                    <dt class="col-5 text-muted">End Date</dt>
+                    <dd class="col-7">@Model.EndDate.ToString("dd MMM yyyy")</dd>
+
+                    <dt class="col-5 text-muted">Agreement</dt>
+                    <dd class="col-7">
+                        @if (!string.IsNullOrEmpty(Model.AgreementFilePath))
+                        {
+                            <a href="@Model.AgreementFilePath" target="_blank" class="btn btn-sm btn-ghost-primary">
+                                <i class="ti ti-file-download me-1"></i> Download PDF
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">No file uploaded</span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+            <div class="card-footer d-flex gap-2">
+                <a class="btn btn-primary btn-sm"
+                       asp-controller="Contracts" asp-action="Edit" asp-route-id="@Model.Id">
+                    <i class="ti ti-pencil me-1"></i> Edit
+                </a>
+                <a class="btn btn-ghost-secondary btn-sm"
+                   asp-controller="Contracts" asp-action="Index">Back</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Requests for this contract -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Service Requests</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Description</th>
+                            <th>Cost (USD)</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var sr in Model.ServiceRequests)
+                        {
+                            <tr>
+                                <td class="text-muted">@sr.Id</td>
+                                <td>@sr.Description</td>
+                                <td>$@sr.CostUSD.ToString("N2")</td>
+                                <td>
+                                    <span class="badge @(sr.Status == RequestStatus.Approved ? "bg-success-lt" : sr.Status == RequestStatus.Rejected ? "bg-danger-lt" : "bg-warning-lt")">
+                                        @sr.Status
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                        @if (!Model.ServiceRequests.Any())
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-3">No service requests yet.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

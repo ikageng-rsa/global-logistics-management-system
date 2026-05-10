@@ -1,0 +1,43 @@
+﻿@model Contract
+@{
+    ViewData["Title"] = "Delete Contract";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-5">
+        <div class="card border-danger">
+            <div class="card-header bg-danger-lt">
+                <h3 class="card-title text-danger">
+                    <i class="ti ti-alert-triangle me-2"></i> Confirm Deletion
+                </h3>
+            </div>
+            <div class="card-body">
+                <p>Are you sure you want to delete <strong>Contract #@Model.Id</strong>?</p>
+                <p class="text-muted small">
+                    This will also delete all associated service requests.
+                </p>
+
+                <dl class="row">
+                    <dt class="col-5 text-muted">Client</dt>
+                    <dd class="col-7">@Model.Client?.Name</dd>
+
+                    <dt class="col-5 text-muted">Status</dt>
+                    <dd class="col-7">@Model.Status</dd>
+
+                    <dt class="col-5 text-muted">Service Level</dt>
+                    <dd class="col-7">@Model.ServiceLevel</dd>
+                </dl>
+            </div>
+            <div class="card-footer d-flex gap-2">
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <button type="submit" class="btn btn-danger">
+                        <i class="ti ti-trash me-1"></i> Yes, Delete
+                    </button>
+                </form>
+                <a class="btn btn-ghost-secondary"
+                   asp-controller="Contracts" asp-action="Index">Cancel</a>
+            </div>
+        </div>
+    </div>
+</div>

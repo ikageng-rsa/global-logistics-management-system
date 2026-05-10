@@ -1,0 +1,92 @@
+﻿@model IEnumerable<Contract>
+@{
+    ViewData["Title"] = "Contracts";
+}
+
+<div class="row mb-3">
+    <div class="col">
+        <a asp-controller="Contracts" asp-action="Create" class="btn btn-primary">
+            <i class="ti ti-plus me-1"></i> New Contract
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">All Contracts</h3>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table table-hover">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Client</th>
+                    <th>Service Level</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Status</th>
+                    <th class="w-1">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var contract in Model)
+                {
+                    <tr>
+                        <td class="text-muted">@contract.Id</td>
+                        <td>@contract.Client?.Name</td>
+                        <td>
+                            @{
+                                var levelColor = contract.ServiceLevel switch
+                                {
+                                    ServiceLevel.Premium => "bg-yellow-lt",
+                                    ServiceLevel.Express => "bg-red-lt",
+                                    _ => "bg-blue-lt"
+                                };
+                            }
+                            <span class="badge @levelColor">@contract.ServiceLevel</span>
+                        </td>
+                        <td>@contract.StartDate.ToString("dd MMM yyyy")</td>
+                        <td>@contract.EndDate.ToString("dd MMM yyyy")</td>
+                        <td>
+                            @{
+                                var statusColor = contract.Status switch
+                                {
+                                    ContractStatus.Active => "bg-success-lt text-success",
+                                    ContractStatus.Expired => "bg-danger-lt text-danger",
+                                    ContractStatus.OnHold => "bg-warning-lt text-warning",
+                                    _ => "bg-secondary-lt text-secondary"
+                                };
+                            }
+                            <span class="badge @statusColor">@contract.Status</span>
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a class="btn btn-sm btn-ghost-secondary"
+                                       asp-controller="Contracts" asp-action="Details" asp-route-id="@contract.Id">
+                                    <i class="ti ti-eye"></i>
+                                </a>
+                                <a class="btn btn-sm btn-ghost-secondary"
+                                       asp-controller="Contracts" asp-action="Edit" asp-route-id="@contract.Id">
+                                    <i class="ti ti-pencil"></i>
+                                </a>
+                                <a class="btn btn-sm btn-ghost-danger"
+                                       asp-controller="Contracts" asp-action="Delete" asp-route-id="@contract.Id">
+                                    <i class="ti ti-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            <i class="ti ti-file-off fs-2 d-block mb-2"></i>
+                            No contracts found. Create your first contract.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
