@@ -4,6 +4,8 @@ using GLMS.Web.Observers;
 using GLMS.Web.Observers.Contracts;
 using GLMS.Web.Repositories;
 using GLMS.Web.Repositories.Contracts;
+using GLMS.Web.Services;
+using GLMS.Web.Services.Contracts;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +24,10 @@ builder.Services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>(
 
 // Register factory resolver
 builder.Services.AddSingleton<ContractFactoryResolver>();
+
+
+// Register currency service with typed HttpClient
+builder.Services.AddHttpClient<ICurrencyService, ExchangeRateService>();
 
 // Register observers
 builder.Services.AddScoped<IContractObserver, ServiceRequestBlocker>();
