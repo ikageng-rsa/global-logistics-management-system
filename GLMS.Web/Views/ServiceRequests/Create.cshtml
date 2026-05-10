@@ -1,0 +1,66 @@
+﻿@model ServiceRequest
+@{
+    ViewData["Title"] = "New Service Request";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Create Service Request</h3>
+            </div>
+            <div class="card-body">
+                <form asp-controller="ServiceRequests" asp-action="Create" method="post">
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger">
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <div><i class="ti ti-alert-circle me-1"></i>@error.ErrorMessage</div>
+                            }
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <label asp-for="ContractId" class="form-label required">Contract</label>
+                        @Html.DropDownList(
+                            
+                            "ContractId",
+                            ViewBag.Contracts as SelectList,
+                            "— Select Active Contract —",
+                            new { @class = "form-select" }
+                        )
+                        <small class="text-muted">Only active contracts are shown.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label required"></label>
+                        <textarea asp-for="Description" class="form-control" rows="3"
+                                  placeholder="Describe the service being requested..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="CostUSD" class="form-label required">Cost (USD)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input asp-for="CostUSD" type="number" step="0.01" min="0" class="form-control"
+                                   placeholder="0.00" />
+                        </div>
+                        <small class="text-muted">ZAR equivalent will be calculated automatically.</small>
+                        <span asp-validation-for="CostUSD" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ti ti-device-floppy me-1"></i> Submit Request
+                        </button>
+                        <a class="btn btn-ghost-secondary"
+                           asp-controller="ServiceRequests" asp-action="Index">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

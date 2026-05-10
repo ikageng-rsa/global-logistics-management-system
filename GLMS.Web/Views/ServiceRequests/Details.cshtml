@@ -1,0 +1,63 @@
+﻿@model ServiceRequest
+@{
+    ViewData["Title"] = "Service Request Details";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="ti ti-clipboard-list me-2 text-blue"></i>Service Request #@Model.Id
+                </h3>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-5 text-muted">Contract</dt>
+                    <dd class="col-7">
+                        <a href="/Contracts/Details/@Model.ContractId">Contract #@Model.ContractId</a>
+                    </dd>
+
+                    <dt class="col-5 text-muted">Description</dt>
+                    <dd class="col-7">@Model.Description</dd>
+
+                    <dt class="col-5 text-muted">Cost (USD)</dt>
+                    <dd class="col-7">$@Model.CostUSD.ToString("N2")</dd>
+
+                    <dt class="col-5 text-muted">Cost (ZAR)</dt>
+                    <dd class="col-7">
+                        @if (Model.CostZAR > 0)
+                        {
+                            <span>R @Model.CostZAR.ToString("N2")</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Not yet converted</span>
+                        }
+                    </dd>
+
+                    <dt class="col-5 text-muted">Status</dt>
+                    <dd class="col-7">
+                        @{
+                            var statusColor = Model.Status switch
+                            {
+                                RequestStatus.Approved => "bg-success-lt text-success",
+                                RequestStatus.Rejected => "bg-danger-lt text-danger",
+                                _ => "bg-warning-lt text-warning"
+                            };
+                        }
+                        <span class="badge @statusColor">@Model.Status</span>
+                    </dd>
+                </dl>
+            </div>
+            <div class="card-footer d-flex gap-2">
+                <a class="btn btn-primary btn-sm"
+                    asp-controller="ServiceRequests" asp-action="Edit" asp-route-id="@Model.Id">
+                    <i class="ti ti-pencil me-1"></i> Edit
+                </a>
+                <a class="btn btn-ghost-secondary btn-sm"
+                   asp-controller="ServiceRequests" asp-action="Index">Back</a>
+            </div>
+        </div>
+    </div>
+</div>

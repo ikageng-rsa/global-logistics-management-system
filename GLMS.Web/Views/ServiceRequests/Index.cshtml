@@ -1,0 +1,91 @@
+﻿@model IEnumerable<ServiceRequest>
+@{
+    ViewData["Title"] = "Service Requests";
+}
+
+<div class="row mb-3">
+    <div class="col">
+        <a class="btn btn-primary"
+            asp-controller="ServiceRequests" asp-action="Create">
+            <i class="ti ti-plus me-1"></i> New Service Request
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">All Service Requests</h3>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table table-hover">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Contract</th>
+                    <th>Description</th>
+                    <th>Cost (USD)</th>
+                    <th>Cost (ZAR)</th>
+                    <th>Status</th>
+                    <th class="w-1">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var sr in Model)
+                {
+                    <tr>
+                        <td class="text-muted">@sr.Id</td>
+                        <td>Contract #@sr.ContractId</td>
+                        <td>@sr.Description</td>
+                        <td>$@sr.CostUSD.ToString("N2")</td>
+                        <td>
+                            @if (sr.CostZAR > 0)
+                            {
+                                <span>R @sr.CostZAR.ToString("N2")</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                        <td>
+                            @{
+                                var statusColor = sr.Status switch
+                                {
+                                    RequestStatus.Approved => "bg-success-lt text-success",
+                                    RequestStatus.Rejected => "bg-danger-lt text-danger",
+                                    _ => "bg-warning-lt text-warning"
+                                };
+                            }
+                            <span class="badge @statusColor">@sr.Status</span>
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a class="btn btn-sm btn-ghost-secondary"
+                                       asp-controller="ServiceRequests" asp-action="Details" asp-route-id="@sr.Id">
+                                    <i class="ti ti-eye"></i>
+                                </a>
+                                <a class="btn btn-sm btn-ghost-secondary"
+                                       asp-controller="ServiceRequests" asp-action="Edit" asp-route-id="@sr.Id">
+                                    <i class="ti ti-pencil"></i>
+                                </a>
+                                <a class="btn btn-sm btn-ghost-danger"
+                                       asp-controller="ServiceRequests" asp-action="Delete" asp-route-id="@sr.Id">
+                                    <i class="ti ti-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            <i class="ti ti-clipboard-off fs-2 d-block mb-2"></i>
+                            No service requests found.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
