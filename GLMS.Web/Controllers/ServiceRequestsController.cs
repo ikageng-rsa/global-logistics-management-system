@@ -1,6 +1,7 @@
 ﻿using GLMS.Web.Enums;
 using GLMS.Web.Models;
 using GLMS.Web.Repositories.Contracts;
+using GLMS.Web.Services.Contracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -10,13 +11,17 @@ namespace GLMS.Web.Controllers
     {
         private readonly IServiceRequestRepository _serviceRequestRepository;
         private readonly IContractRepository _contractRepository;
+        private readonly ICurrencyService _currencyService;
 
         public ServiceRequestsController(
             IServiceRequestRepository serviceRequestRepository,
-            IContractRepository contractRepository)
+            IContractRepository contractRepository,
+            ICurrencyService currencyService
+        )
         {
             _serviceRequestRepository = serviceRequestRepository;
             _contractRepository = contractRepository;
+            _currencyService = currencyService;
         }
 
         [HttpGet("service-requests")]
@@ -43,7 +48,7 @@ namespace GLMS.Web.Controllers
 
         [HttpPost("service-requests/create")]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(ServiceRequest serviceRequest)
+        public async Task<IActionResult> Create(ServiceRequest serviceRequest)
         {
             // Workflow validation — block creation on Expired or OnHold contracts
             var contract = _contractRepository.GetById(serviceRequest.ContractId);
@@ -66,6 +71,10 @@ namespace GLMS.Web.Controllers
 
             if (ModelState.IsValid)
             {
+                serviceRequest.CostZAR = await _currencyService.ConvertUsdToZarAsync(serviceRequest.CostUSD);
+                
+                TempData["Success"] = $"Service request created. ${serviceRequest.CostUSD:N2} USD = R {serviceRequest.CostZAR:N2} ZAR.";
+
                 _serviceRequestRepository.Add(serviceRequest);
                 _serviceRequestRepository.Save();
                 return RedirectToAction(nameof(Index));
@@ -86,12 +95,13 @@ namespace GLMS.Web.Controllers
 
         [HttpPost("service-requests/edit/{id}")]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, ServiceRequest serviceRequest)
+        public async Task<IActionResult> Edit(int id, ServiceRequest serviceRequest)
         {
             if (id != serviceRequest.Id) return BadRequest();
 
             if (ModelState.IsValid)
             {
+                serviceRequest.CostZAR = await _currencyService.ConvertUsdToZarAsync(serviceRequest.CostUSD);
                 _serviceRequestRepository.Update(serviceRequest);
                 _serviceRequestRepository.Save();
                 return RedirectToAction(nameof(Index));
