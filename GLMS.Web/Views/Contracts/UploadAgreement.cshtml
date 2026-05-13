@@ -1,0 +1,93 @@
+﻿@model Contract
+@{
+    ViewData["Title"] = "Upload Agreement";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="ti ti-file-upload me-2 text-blue"></i>Upload Agreement — Contract #@Model.Id
+                </h3>
+            </div>
+            <div class="card-body">
+
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <div><i class="ti ti-alert-circle me-1"></i>@error.ErrorMessage</div>
+                        }
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.AgreementFilePath))
+                {
+                    <div class="alert alert-info">
+                        <i class="ti ti-file-check me-2"></i>
+                        A file is already uploaded.
+                        <a href="@Model.AgreementFilePath" target="_blank" class="alert-link ms-1">
+                            View current agreement
+                        </a>
+                        <br />
+                        <small class="text-muted">Uploading a new file will replace the existing one.</small>
+                    </div>
+                }
+
+                <form asp-controller"Contracts" asp-action="UploadAgreement" method="post" enctype="multipart/form-data">
+                    <input type="hidden" asp-for="Id" />
+
+                    <div class="mb-3">
+                        <label class="form-label required">Agreement PDF</label>
+                        <input type="file"
+                               name="agreementFile"
+                               class="form-control"
+                               accept=".pdf,application/pdf" />
+                        <small class="text-muted">
+                            PDF files only. Maximum size: 10MB.
+                        </small>
+                    </div>
+
+                    <!-- File preview inf -->
+                    <div id="file-info" class="mb-3 d-none">
+                        <div class="alert alert-success py-2">
+                            <i class="ti ti-file-text me-2"></i>
+                            <span id="file-name"></span>
+                            <span class="text-muted ms-2" id="file-size"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ti ti-upload me-1"></i> Upload Agreement
+                        </button>
+                        <a class="btn btn-ghost-secondary"
+                            asp-controller="Contracts" asp-action="Details" asp-route-id="@Model.Id">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Show file name and size preview before upload
+        document.querySelector('input[type="file"]').addEventListener('change', function () {
+            const file = this.files[0];
+            const infoBox = document.getElementById('file-info');
+            const fileName = document.getElementById('file-name');
+            const fileSize = document.getElementById('file-size');
+
+            if (file) {
+                fileName.textContent = file.name;
+                fileSize.textContent = `(${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                infoBox.classList.remove('d-none');
+            } else {
+                infoBox.classList.add('d-none');
+            }
+        });
+    </script>
+}
