@@ -130,7 +130,7 @@ namespace GLMS.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: /Contracts/UploadAgreement/5
+        [HttpGet("contracts/upload-agreement/{id}")]
         public IActionResult UploadAgreement(int id)
         {
             var contract = _contractRepository.GetById(id);
@@ -138,8 +138,7 @@ namespace GLMS.Web.Controllers
             return View(contract);
         }
 
-        // POST: /Contracts/UploadAgreement/5
-        [HttpPost]
+        [HttpPost("contracts/upload-agreement/{id}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UploadAgreement(int id, IFormFile agreementFile)
         {
