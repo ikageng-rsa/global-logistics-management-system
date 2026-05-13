@@ -34,6 +34,9 @@ builder.Services.AddScoped<IContractObserver, ServiceRequestBlocker>();
 builder.Services.AddScoped<IContractObserver, AuditLogger>();
 builder.Services.AddScoped<ContractSubject>();
 
+// Register file service
+builder.Services.AddScoped<IFileService, FileService>();
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
