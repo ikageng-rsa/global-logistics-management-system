@@ -106,6 +106,7 @@ namespace GLMS.Web.Controllers
                 _contractRepository.Update(contract);
                 _contractRepository.Save();
 
+                TempData["Success"] = "Contract updated.";
                 return RedirectToAction(nameof(Index));
             }
 

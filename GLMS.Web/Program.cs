@@ -30,9 +30,18 @@ builder.Services.AddSingleton<ContractFactoryResolver>();
 builder.Services.AddHttpClient<ICurrencyService, ExchangeRateService>();
 
 // Register observers
-builder.Services.AddScoped<IContractObserver, ServiceRequestBlocker>();
-builder.Services.AddScoped<IContractObserver, AuditLogger>();
-builder.Services.AddScoped<ContractSubject>();
+builder.Services.AddScoped<ServiceRequestBlocker>();
+builder.Services.AddScoped<AuditLogger>();
+builder.Services.AddScoped<ContractSubject>(provider =>
+{
+    var subject = new ContractSubject();
+
+    // Attach all observers at construction time
+    subject.Attach(provider.GetRequiredService<ServiceRequestBlocker>());
+    subject.Attach(provider.GetRequiredService<AuditLogger>());
+
+    return subject;
+});
 
 // Register file service
 builder.Services.AddScoped<IFileService, FileService>();
