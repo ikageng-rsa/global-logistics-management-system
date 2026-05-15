@@ -73,6 +73,8 @@ namespace GLMS.Web.Controllers
                 _contractRepository.Add(contract);
                 _contractRepository.Save();
 
+                TempData["Success"] = "Contract created successfully.";
+
                 return RedirectToAction(nameof(Index));
             }
             catch (ArgumentException ex)
@@ -106,7 +108,7 @@ namespace GLMS.Web.Controllers
                 _contractRepository.Update(contract);
                 _contractRepository.Save();
 
-                TempData["Success"] = "Contract updated.";
+                TempData["Success"] = "Contract updated successfully.";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -119,6 +121,8 @@ namespace GLMS.Web.Controllers
         {
             var contract = _contractRepository.GetById(id);
             if (contract == null) return NotFound();
+
+            TempData["Success"] = "Contract deleted successfully.";
             return View(contract);
         }
 
@@ -128,6 +132,8 @@ namespace GLMS.Web.Controllers
         {
             _contractRepository.Delete(id);
             _contractRepository.Save();
+
+            TempData["Success"] = "Contact deleted successfully.";
             return RedirectToAction(nameof(Index));
         }
 

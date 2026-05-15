@@ -42,6 +42,8 @@ namespace GLMS.Web.Controllers
             {
                 _clientRepository.Add(client);
                 _clientRepository.Save();
+
+                TempData["Success"] = "Client added successfully.";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -66,6 +68,8 @@ namespace GLMS.Web.Controllers
             {
                 _clientRepository.Update(client);
                 _clientRepository.Save();
+
+                TempData["Success"] = "Client updated successfully.";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -86,6 +90,8 @@ namespace GLMS.Web.Controllers
         {
             _clientRepository.Delete(id);
             _clientRepository.Save();
+
+            TempData["Success"] = "Client deleted successfully.";
             return RedirectToAction(nameof(Index));
         }
     }

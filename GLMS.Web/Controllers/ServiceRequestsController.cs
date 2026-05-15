@@ -100,6 +100,23 @@ namespace GLMS.Web.Controllers
 
             if (ModelState.IsValid)
             {
+                // Block edits if the contract is Expired or OnHold
+                var contract = _contractRepository.GetById(serviceRequest.ContractId);
+
+                if (contract == null)
+                {
+                    ModelState.AddModelError(string.Empty, "Associated contract not found.");
+                    return View(serviceRequest);
+                }
+
+                if (contract.Status == ContractStatus.Expired ||
+                    contract.Status == ContractStatus.OnHold)
+                {
+                    ModelState.AddModelError(string.Empty,
+                        $"This service request cannot be edited because the contract is {contract.Status}.");
+                    return View(serviceRequest);
+                }
+
                 serviceRequest.CostZAR = await _currencyService.ConvertUsdToZarAsync(serviceRequest.CostUSD);
                 _serviceRequestRepository.Update(serviceRequest);
                 _serviceRequestRepository.Save();
