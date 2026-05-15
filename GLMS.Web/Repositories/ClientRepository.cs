@@ -1,6 +1,7 @@
 ﻿using GLMS.Web.Data;
 using GLMS.Web.Models;
 using GLMS.Web.Repositories.Contracts;
+using Microsoft.EntityFrameworkCore;
 
 namespace GLMS.Web.Repositories
 {
@@ -15,12 +16,16 @@ namespace GLMS.Web.Repositories
 
         public IEnumerable<Client> GetAll()
         {
-            return _context.Clients.ToList();
+            return _context.Clients
+                .Include(c => c.Contracts)
+                .ToList();
         }
 
         public Client? GetById(int id)
         {
-            return _context.Clients.Find(id);
+            return _context.Clients
+                .Include(c => c.Contracts)
+                .FirstOrDefault(c => c.Id == id);
         }
 
         public void Add(Client client)
