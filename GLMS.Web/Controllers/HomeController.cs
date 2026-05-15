@@ -1,31 +1,43 @@
-using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
+using GLMS.Web.Enums;
 using GLMS.Web.Models;
+using GLMS.Web.Repositories.Contracts;
+using Microsoft.AspNetCore.Mvc;
 
-namespace GLMS.Web.Controllers;
-
-public class HomeController : Controller
+namespace GLMS.Web.Controllers
 {
-    private readonly ILogger<HomeController> _logger;
-
-    public HomeController(ILogger<HomeController> logger)
+    public class HomeController : Controller
     {
-        _logger = logger;
-    }
+        private readonly IClientRepository _clientRepository;
+        private readonly IContractRepository _contractRepository;
+        private readonly IServiceRequestRepository _serviceRequestRepository;
 
-    public IActionResult Index()
-    {
-        return View();
-    }
+        public HomeController(
+            IClientRepository clientRepository,
+            IContractRepository contractRepository,
+            IServiceRequestRepository serviceRequestRepository)
+        {
+            _clientRepository = clientRepository;
+            _contractRepository = contractRepository;
+            _serviceRequestRepository = serviceRequestRepository;
+        }
 
-    public IActionResult Privacy()
-    {
-        return View();
-    }
+        [HttpGet("")]
+        public IActionResult Index()
+        {
+            var contracts = _contractRepository.GetAll().ToList();
+            var requests = _serviceRequestRepository.GetAll().ToList();
 
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            ViewBag.TotalClients = _clientRepository.GetAll().Count();
+            ViewBag.TotalContracts = contracts.Count;
+            ViewBag.ActiveContracts = contracts.Count(c => c.Status == ContractStatus.Active);
+            ViewBag.ExpiredContracts = contracts.Count(c => c.Status == ContractStatus.Expired);
+            ViewBag.OnHoldContracts = contracts.Count(c => c.Status == ContractStatus.OnHold);
+            ViewBag.TotalRequests = requests.Count;
+            ViewBag.PendingRequests = requests.Count(r => r.Status == RequestStatus.Pending);
+            ViewBag.TotalValueUSD = requests.Sum(r => r.CostUSD);
+            ViewBag.TotalValueZAR = requests.Sum(r => r.CostZAR);
+
+            return View();
+        }
     }
 }
