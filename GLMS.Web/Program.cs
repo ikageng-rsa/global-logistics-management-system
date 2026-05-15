@@ -6,6 +6,7 @@ using GLMS.Web.Repositories;
 using GLMS.Web.Repositories.Contracts;
 using GLMS.Web.Services;
 using GLMS.Web.Services.Contracts;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -49,6 +50,13 @@ builder.Services.AddScoped<IFileService, FileService>();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+// Add session support for TempData
+builder.Services.AddSession();
+builder.Services.Configure<CookieTempDataProviderOptions>(options =>
+{
+    options.Cookie.IsEssential = true;
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -61,6 +69,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+app.UseSession();
 
 app.UseRouting();
 
