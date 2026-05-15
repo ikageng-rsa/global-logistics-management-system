@@ -17,6 +17,7 @@ namespace GLMS.Web.Repositories
         public IEnumerable<Client> GetAll()
         {
             return _context.Clients
+                .AsNoTracking()
                 .Include(c => c.Contracts)
                 .ToList();
         }
@@ -24,6 +25,7 @@ namespace GLMS.Web.Repositories
         public Client? GetById(int id)
         {
             return _context.Clients
+                .AsNoTracking()
                 .Include(c => c.Contracts)
                 .FirstOrDefault(c => c.Id == id);
         }
