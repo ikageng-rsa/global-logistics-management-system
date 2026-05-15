@@ -17,6 +17,7 @@ namespace GLMS.Web.Repositories
         public IEnumerable<ServiceRequest> GetAll()
         {
             return _context.ServiceRequests
+                .AsNoTracking()
                 .Include(sr => sr.Contract)
                 .ToList();
         }
@@ -24,6 +25,7 @@ namespace GLMS.Web.Repositories
         public IEnumerable<ServiceRequest> GetByContractId(int contractId)
         {
             return _context.ServiceRequests
+                .AsNoTracking()
                 .Where(sr => sr.ContractId == contractId)
                 .ToList();
         }
@@ -31,6 +33,7 @@ namespace GLMS.Web.Repositories
         public ServiceRequest? GetById(int id)
         {
             return _context.ServiceRequests
+                .AsNoTracking()
                 .Include(sr => sr.Contract)
                 .FirstOrDefault(sr => sr.Id == id);
         }
