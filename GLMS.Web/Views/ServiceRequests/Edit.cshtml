@@ -15,8 +15,12 @@
                     <input type="hidden" asp-for="CostZAR" />
 
                     <div class="mb-3">
-                        <label asp-for="ContractId" class="form-label required">Contract</label>
-                        @Html.DropDownList("ContractId", ViewBag.Contracts as SelectList, new { @class = "form-select" })
+                        <input type="text"
+                               class="form-control"
+                               value="@($"{Model.Contract?.Client?.Name} — {Model.Contract?.ServiceLevel} ({Model.Contract?.StartDate:dd MMM yyyy} to {Model.Contract?.EndDate:dd MMM yyyy})")"
+                               disabled />
+                        <input type="hidden" asp-for="ContractId" />
+                        <small class="text-muted">Contract cannot be changed after creation.</small>
                     </div>
 
                     <div class="mb-3">

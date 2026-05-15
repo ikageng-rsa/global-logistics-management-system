@@ -89,7 +89,6 @@ namespace GLMS.Web.Controllers
         {
             var request = _serviceRequestRepository.GetById(id);
             if (request == null) return NotFound();
-            PopulateContractDropdown();
             return View(request);
         }
 
@@ -104,10 +103,11 @@ namespace GLMS.Web.Controllers
                 serviceRequest.CostZAR = await _currencyService.ConvertUsdToZarAsync(serviceRequest.CostUSD);
                 _serviceRequestRepository.Update(serviceRequest);
                 _serviceRequestRepository.Save();
+
+                TempData["Success"] = "Service request updated successfully.";
                 return RedirectToAction(nameof(Index));
             }
 
-            PopulateContractDropdown();
             return View(serviceRequest);
         }
 
