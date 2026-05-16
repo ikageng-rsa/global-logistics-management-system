@@ -35,7 +35,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/account/login";
-    options.AccessDeniedPath = "/account/accessDenied";
+    options.AccessDeniedPath = "/account/access-denied";
 });
 
 // Register repositories for dependency injection
@@ -98,7 +98,7 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");d
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 // Seed roles and default users
 using (var scope = app.Services.CreateScope())
