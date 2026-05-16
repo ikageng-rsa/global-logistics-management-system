@@ -127,7 +127,22 @@
                     <div class="mt-auto pb-3">
                         <div class="d-flex align-items-center px-3 gap-2">
                             <i class="ti ti-user-circle text-muted"></i>
-                            <span class="text-muted small">Admin</span>
+                            <div>
+                                <div class="text-white small">@User.Identity?.Name</div>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <span class="badge bg-primary" style="font-size:0.6rem;">Admin</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary" style="font-size:0.6rem;">User</span>
+                                }
+                            </div>
+                            <form asp-action="Logout" asp-controller="Account" method="post" class="ms-auto">
+                                <button type="submit" class="btn btn-sm btn-ghost-danger" title="Sign out">
+                                    <i class="ti ti-logout"></i>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
