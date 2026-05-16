@@ -2,11 +2,14 @@
 using GLMS.Web.Models;
 using GLMS.Web.Repositories.Contracts;
 using GLMS.Web.Services.Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace GLMS.Web.Controllers
 {
+    [Authorize]
+
     public class ServiceRequestsController : Controller
     {
         private readonly IServiceRequestRepository _serviceRequestRepository;

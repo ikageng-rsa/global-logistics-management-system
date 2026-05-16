@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using GLMS.Web.Models;
+﻿using GLMS.Web.Models;
 using GLMS.Web.Repositories.Contracts;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GLMS.Web.Controllers
 {
+    [Authorize]
+
     public class ClientsController : Controller
     {
         private readonly IClientRepository _clientRepository;

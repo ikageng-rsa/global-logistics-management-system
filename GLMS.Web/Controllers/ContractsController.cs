@@ -4,12 +4,15 @@ using GLMS.Web.Models;
 using GLMS.Web.Observers;
 using GLMS.Web.Repositories.Contracts;
 using GLMS.Web.Services.Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace GLMS.Web.Controllers
 {
+    [Authorize]
+
     public class ContractsController : Controller
     {
         private readonly IContractRepository _contractRepository;
