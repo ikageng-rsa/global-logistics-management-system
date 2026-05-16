@@ -1,10 +1,12 @@
 using GLMS.Web.Enums;
 using GLMS.Web.Models;
 using GLMS.Web.Repositories.Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GLMS.Web.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly IClientRepository _clientRepository;
