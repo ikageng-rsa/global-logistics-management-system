@@ -1,0 +1,87 @@
+﻿@model GLMS.Web.ViewModels.UserCreateViewModel
+@{
+    ViewData["Title"] = "Add User";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">New User</h3>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger">
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <div><i class="ti ti-alert-circle me-1"></i>@error.ErrorMessage</div>
+                            }
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label required"></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="ti ti-mail"></i></span>
+                            <input asp-for="Email" class="form-control" placeholder="user@techmore.co.za" />
+                        </div>
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label required"></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="ti ti-lock"></i></span>
+                            <input asp-for="Password"
+                                   class="form-control"
+                                   placeholder="••••••••"
+                                   id="password-input" />
+                            <button class="btn btn-outline-secondary" type="button" id="toggle-password">
+                                <i class="ti ti-eye" id="eye-icon"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Role" class="form-label required"></label>
+                        <select asp-for="Role" class="form-select">
+                            <option value="">— Select Role —</option>
+                            @foreach (var role in ViewBag.Roles as List<string> ?? new List<string>())
+                            {
+                                <option value="@role">@role</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Role" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ti ti-device-floppy me-1"></i> Create User
+                        </button>
+                        <a href="/Users" class="btn btn-ghost-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('toggle-password').addEventListener('click', function () {
+            const input = document.getElementById('password-input');
+            const icon = document.getElementById('eye-icon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('ti-eye', 'ti-eye-off');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('ti-eye-off', 'ti-eye');
+            }
+        });
+    </script>
+}

@@ -1,0 +1,43 @@
+﻿@model GLMS.Web.ViewModels.UserListViewModel
+@{
+    ViewData["Title"] = "Delete User";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-5">
+        <div class="card border-danger">
+            <div class="card-header bg-danger-lt">
+                <h3 class="card-title text-danger">
+                    <i class="ti ti-alert-triangle me-2"></i> Confirm Deletion
+                </h3>
+            </div>
+            <div class="card-body">
+                <p>Are you sure you want to delete user <strong>@Model.Email</strong>?</p>
+                <p class="text-muted small">
+                    This action cannot be undone. The user will immediately lose access to the system.
+                </p>
+
+                <dl class="row">
+                    <dt class="col-5 text-muted">Email</dt>
+                    <dd class="col-7">@Model.Email</dd>
+
+                    <dt class="col-5 text-muted">Role</dt>
+                    <dd class="col-7">
+                        <span class="badge @(Model.Role == "Admin" ? "bg-primary" : "bg-secondary")">
+                            @Model.Role
+                        </span>
+                    </dd>
+                </dl>
+            </div>
+            <div class="card-footer d-flex gap-2">
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <button type="submit" class="btn btn-danger">
+                        <i class="ti ti-trash me-1"></i> Yes, Delete
+                    </button>
+                </form>
+                <a href="/Users" class="btn btn-ghost-secondary">Cancel</a>
+            </div>
+        </div>
+    </div>
+</div>

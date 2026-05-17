@@ -1,0 +1,63 @@
+﻿@model IEnumerable<GLMS.Web.ViewModels.UserListViewModel>
+@{
+    ViewData["Title"] = "User Management";
+}
+
+<div class="row mb-3">
+    <div class="col">
+        <a href="/Users/Create" class="btn btn-primary">
+            <i class="ti ti-user-plus me-1"></i> Add User
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">System Users</h3>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table table-hover">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th class="w-1">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model)
+                {
+                    <tr>
+                        <td>
+                            <i class="ti ti-user-circle me-2 text-muted"></i>@user.Email
+                        </td>
+                        <td>
+                            <span class="badge @(user.Role == "Admin" ? "bg-primary" : "bg-secondary")">
+                                @user.Role
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="/Users/Edit/@user.Id" class="btn btn-sm btn-ghost-secondary">
+                                    <i class="ti ti-pencil"></i>
+                                </a>
+                                <a href="/Users/Delete/@user.Id" class="btn btn-sm btn-ghost-danger">
+                                    <i class="ti ti-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="3" class="text-center text-muted py-4">
+                            <i class="ti ti-users-off fs-2 d-block mb-2"></i>
+                            No users found.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
