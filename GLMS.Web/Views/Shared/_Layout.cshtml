@@ -121,6 +121,19 @@
                                 <span class="nav-link-title">Service Requests</span>
                             </a>
                         </li>
+                        
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Users" ? "active" : "")"
+                                    asp-controller="Users" asp-action="Index">
+                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                        <i class="ti ti-users-group"></i>
+                                    </span>
+                                    <span class="nav-link-title">User Management</span>
+                                </a>
+                            </li>
+                        }
 
                     </ul>
 
