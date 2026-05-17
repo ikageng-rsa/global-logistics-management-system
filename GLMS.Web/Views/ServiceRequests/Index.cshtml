@@ -68,10 +68,13 @@
                                        asp-controller="ServiceRequests" asp-action="Edit" asp-route-id="@sr.Id">
                                     <i class="ti ti-pencil"></i>
                                 </a>
-                                <a class="btn btn-sm btn-ghost-danger"
-                                       asp-controller="ServiceRequests" asp-action="Delete" asp-route-id="@sr.Id">
-                                    <i class="ti ti-trash"></i>
-                                </a>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <a class="btn btn-sm btn-ghost-danger"
+                                           asp-controller="ServiceRequests" asp-action="Delete" asp-route-id="@sr.Id">
+                                        <i class="ti ti-trash"></i>
+                                    </a>
+                                }
                             </div>
                         </td>
                     </tr>

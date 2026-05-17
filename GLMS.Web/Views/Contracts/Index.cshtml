@@ -69,10 +69,13 @@
                                        asp-controller="Contracts" asp-action="Edit" asp-route-id="@contract.Id">
                                     <i class="ti ti-pencil"></i>
                                 </a>
-                                <a class="btn btn-sm btn-ghost-danger"
-                                       asp-controller="Contracts" asp-action="Delete" asp-route-id="@contract.Id">
-                                    <i class="ti ti-trash"></i>
-                                </a>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <a class="btn btn-sm btn-ghost-danger"
+                                           asp-controller="Contracts" asp-action="Delete" asp-route-id="@contract.Id">
+                                        <i class="ti ti-trash"></i>
+                                    </a>
+                                }
                             </div>
                         </td>
                     </tr>
