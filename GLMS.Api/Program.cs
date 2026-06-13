@@ -3,6 +3,8 @@ using GLMS.Api.Factories;
 using GLMS.Api.Observers;
 using GLMS.Api.Repositories;
 using GLMS.Api.Repositories.Contracts;
+using GLMS.Api.Services;
+using GLMS.Api.Services.Contracts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -47,6 +49,12 @@ builder.Services.AddScoped<ContractSubject>(provider =>
 
     return subject;
 });
+
+// Register currency service with typed HttpClient
+builder.Services.AddHttpClient<ICurrencyService, ExchangeRateService>();
+
+// Register file service
+builder.Services.AddScoped<IFileService, FileService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
