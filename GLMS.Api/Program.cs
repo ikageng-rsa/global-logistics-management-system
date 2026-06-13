@@ -1,4 +1,5 @@
 using GLMS.Api.Data;
+using GLMS.Api.Factories;
 using GLMS.Api.Repositories;
 using GLMS.Api.Repositories.Contracts;
 using Microsoft.AspNetCore.Identity;
@@ -27,6 +28,9 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
 builder.Services.AddScoped<IContractRepository, ContractRepository>();
 builder.Services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>();
+
+// Register factory resolver
+builder.Services.AddSingleton<ContractFactoryResolver>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
