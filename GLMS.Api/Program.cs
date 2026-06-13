@@ -1,5 +1,6 @@
 using GLMS.Api.Data;
 using GLMS.Api.Factories;
+using GLMS.Api.Observers;
 using GLMS.Api.Repositories;
 using GLMS.Api.Repositories.Contracts;
 using Microsoft.AspNetCore.Identity;
@@ -31,6 +32,21 @@ builder.Services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>(
 
 // Register factory resolver
 builder.Services.AddSingleton<ContractFactoryResolver>();
+
+// Register observers as concrete types
+builder.Services.AddScoped<ServiceRequestBlocker>();
+builder.Services.AddScoped<AuditLogger>();
+
+// Build ContractSubject and attach observers
+builder.Services.AddScoped<ContractSubject>(provider =>
+{
+    var subject = new ContractSubject();
+
+    subject.Attach(provider.GetRequiredService<ServiceRequestBlocker>());
+    subject.Attach(provider.GetRequiredService<AuditLogger>());
+
+    return subject;
+});
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
