@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace GLMS.Web.Data
+namespace GLMS.Api.Data
 {
     public class AppDbContext : IdentityDbContext<IdentityUser>
     {

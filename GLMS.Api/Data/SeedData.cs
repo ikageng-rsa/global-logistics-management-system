@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace GLMS.Web.Data
+namespace GLMS.Api.Data
 {
     public static class SeedData
     {
