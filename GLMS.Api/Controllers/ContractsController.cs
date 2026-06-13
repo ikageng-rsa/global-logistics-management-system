@@ -94,5 +94,19 @@ namespace GLMS.Api.Controllers
 
             return Ok(contract);
         }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var contract = _contractRepository.GetById(id);
+
+            if (contract == null)
+                return NotFound();
+
+            _contractRepository.Delete(id);
+            _contractRepository.Save();
+
+            return NoContent();
+        }
     }
 }
