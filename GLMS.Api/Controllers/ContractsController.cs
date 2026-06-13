@@ -2,6 +2,7 @@
 using GLMS.Api.Enums;
 using GLMS.Api.Factories;
 using GLMS.Api.Models;
+using GLMS.Api.Observers;
 using GLMS.Api.Repositories.Contracts;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,13 +14,16 @@ namespace GLMS.Api.Controllers
     {
         private readonly IContractRepository _contractRepository;
         private readonly ContractFactoryResolver _factoryResolver;
+        private readonly ContractSubject _contractSubject;
 
         public ContractsController(
             IContractRepository contractRepository,
-            ContractFactoryResolver factoryResolver)
+            ContractFactoryResolver factoryResolver,
+            ContractSubject contractSubject)
         {
             _contractRepository = contractRepository;
             _factoryResolver = factoryResolver;
+            _contractSubject = contractSubject;
         }
 
         [HttpGet]
@@ -70,6 +74,25 @@ namespace GLMS.Api.Controllers
             {
                 return BadRequest(new { error = ex.Message });
             }
+        }
+
+        [HttpPatch("{id}/status")]
+        public IActionResult UpdateStatus(int id, [FromBody] UpdateStatusRequest request)
+        {
+            var contract = _contractRepository.GetById(id);
+
+            if (contract == null)
+                return NotFound();
+
+            contract.Status = request.Status;
+
+            // Observer pattern — notify all observers of the status change
+            _contractSubject.Notify(contract);
+
+            _contractRepository.Update(contract);
+            _contractRepository.Save();
+
+            return Ok(contract);
         }
     }
 }
