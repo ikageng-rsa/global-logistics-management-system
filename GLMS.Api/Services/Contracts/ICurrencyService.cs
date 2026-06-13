@@ -1,0 +1,8 @@
+﻿namespace GLMS.Api.Services.Contracts
+{
+    public interface ICurrencyService
+    {
+        Task<decimal> GetUsdToZarRateAsync();
+        Task<decimal> ConvertUsdToZarAsync(decimal amountUsd);
+    }
+}
