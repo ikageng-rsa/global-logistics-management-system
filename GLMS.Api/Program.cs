@@ -72,8 +72,16 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
+
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Seed roles and default users
+using (var scope = app.Services.CreateScope())
+{
+    await SeedData.SeedRolesAndUsersAsync(scope.ServiceProvider);
+}
 
 app.Run();
