@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using GLMS.Api.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using GLMS.Api.DTOs;
+using System.Security.Claims;
 
 namespace GLMS.Api.Controllers
 {
@@ -21,7 +22,6 @@ namespace GLMS.Api.Controllers
             _roleManager = roleManager;
         }
 
-        // GET: api/users
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UserListResponse>>> GetAll()
         {
@@ -42,7 +42,6 @@ namespace GLMS.Api.Controllers
             return Ok(result);
         }
 
-        // GET: api/users/roles
         [HttpGet("roles")]
         public ActionResult<IEnumerable<string>> GetRoles()
         {
@@ -69,6 +68,54 @@ namespace GLMS.Api.Controllers
             await _userManager.AddToRoleAsync(user, request.Role);
 
             return Ok(new UserListResponse { Id = user.Id, Email = user.Email!, Role = request.Role });
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, [FromBody] UpdateUserRequest request)
+        {
+            if (id != request.Id)
+                return BadRequest("ID in route does not match ID in body.");
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+                return NotFound();
+
+            // Update email
+            user.Email = request.Email;
+            user.UserName = request.Email;
+            await _userManager.UpdateAsync(user);
+
+            // Update role
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            await _userManager.RemoveFromRolesAsync(user, currentRoles);
+            await _userManager.AddToRoleAsync(user, request.Role);
+
+            // Update password if provided
+            if (!string.IsNullOrEmpty(request.NewPassword))
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                await _userManager.ResetPasswordAsync(user, token, request.NewPassword);
+            }
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            // Prevent admin from deleting their own account
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? User.FindFirstValue("sub");
+
+            if (currentUserId == id)
+                return BadRequest(new { error = "You cannot delete your own account." });
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+                return NotFound();
+
+            await _userManager.DeleteAsync(user);
+            return NoContent();
         }
     }
 }
