@@ -1,6 +1,7 @@
 using GLMS.Web.Enums;
 using GLMS.Web.Models;
 using GLMS.Web.Repositories.Contracts;
+using GLMS.Web.Services.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,27 +10,28 @@ namespace GLMS.Web.Controllers
     [Authorize]
     public class HomeController : Controller
     {
-        private readonly IClientRepository _clientRepository;
-        private readonly IContractRepository _contractRepository;
-        private readonly IServiceRequestRepository _serviceRequestRepository;
+        private readonly IClientApiService _clientApiService;
+        private readonly IContractApiService _contractApiService;
+        private readonly IServiceRequestApiService _serviceRequestApiService;
 
         public HomeController(
-            IClientRepository clientRepository,
-            IContractRepository contractRepository,
-            IServiceRequestRepository serviceRequestRepository)
+            IClientApiService clientApiService,
+            IContractApiService contractApiService,
+            IServiceRequestApiService serviceRequestApiService)
         {
-            _clientRepository = clientRepository;
-            _contractRepository = contractRepository;
-            _serviceRequestRepository = serviceRequestRepository;
+            _clientApiService = clientApiService;
+            _contractApiService = contractApiService;
+            _serviceRequestApiService = serviceRequestApiService;
         }
 
         [HttpGet("")]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var contracts = _contractRepository.GetAll().ToList();
-            var requests = _serviceRequestRepository.GetAll().ToList();
+            var clients = await _clientApiService.GetAllAsync();
+            var contracts = (await _contractApiService.GetAllAsync()).ToList();
+            var requests = (await _serviceRequestApiService.GetAllAsync()).ToList();
 
-            ViewBag.TotalClients = _clientRepository.GetAll().Count();
+            ViewBag.TotalClients = clients.Count();
             ViewBag.TotalContracts = contracts.Count;
             ViewBag.ActiveContracts = contracts.Count(c => c.Status == ContractStatus.Active);
             ViewBag.ExpiredContracts = contracts.Count(c => c.Status == ContractStatus.Expired);
