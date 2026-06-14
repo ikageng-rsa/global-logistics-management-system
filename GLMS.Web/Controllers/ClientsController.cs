@@ -1,5 +1,6 @@
 ﻿using GLMS.Web.Models;
 using GLMS.Web.Repositories.Contracts;
+using GLMS.Web.Services.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,24 +10,24 @@ namespace GLMS.Web.Controllers
 
     public class ClientsController : Controller
     {
-        private readonly IClientRepository _clientRepository;
+        private readonly IClientApiService _clientApiService;
 
-        public ClientsController(IClientRepository clientRepository)
+        public ClientsController(IClientApiService clientApiService)
         {
-            _clientRepository = clientRepository;
+            _clientApiService = clientApiService;
         }
 
         [HttpGet("clients")]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var clients = _clientRepository.GetAll();
+            var clients = await _clientApiService.GetAllAsync();
             return View(clients);
         }
 
         [HttpGet("clients/details/{id}")]
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            var client = _clientRepository.GetById(id);
+            var client = await _clientApiService.GetByIdAsync(id);
             if (client == null) return NotFound();
             return View(client);
         }
@@ -39,62 +40,68 @@ namespace GLMS.Web.Controllers
 
         [HttpPost("clients/create")]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Client client)
+        public async Task<IActionResult> Create(Client client)
         {
             if (ModelState.IsValid)
             {
-                _clientRepository.Add(client);
-                _clientRepository.Save();
+                var success = await _clientApiService.CreateAsync(client);
 
-                TempData["Success"] = "Client added successfully.";
-                return RedirectToAction(nameof(Index));
+                if (success)
+                {
+                    TempData["Success"] = "Client created successfully.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                ModelState.AddModelError(string.Empty, "Failed to create client. Please try again.");
             }
 
             return View(client);
         }
 
         [HttpGet("clients/edit/{id}")]
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var client = _clientRepository.GetById(id);
+            var client = await _clientApiService.GetByIdAsync(id);
             if (client == null) return NotFound();
             return View(client);
         }
 
         [HttpPost("clients/edit/{id}")]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, Client client)
+        public async Task<IActionResult> Edit(int id, Client client)
         {
             if (id != client.Id) return BadRequest();
 
             if (ModelState.IsValid)
             {
-                _clientRepository.Update(client);
-                _clientRepository.Save();
+                var success = await _clientApiService.UpdateAsync(client);
 
-                TempData["Success"] = "Client updated successfully.";
-                return RedirectToAction(nameof(Index));
+                if (success)
+                {
+                    TempData["Success"] = "Client updated successfully.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                ModelState.AddModelError(string.Empty, "Failed to update client. Please try again.");
             }
 
             return View(client);
         }
 
         [HttpGet("clients/delete/{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var client = _clientRepository.GetById(id);
+            var client = await _clientApiService.GetByIdAsync(id);
             if (client == null) return NotFound();
             return View(client);
         }
 
         [HttpPost("clients/delete/{id}"), ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            _clientRepository.Delete(id);
-            _clientRepository.Save();
-
-            TempData["Success"] = "Client deleted successfully.";
+            await _clientApiService.DeleteAsync(id);
+            TempData["Success"] = "Client deleted.";
             return RedirectToAction(nameof(Index));
         }
     }
