@@ -1,27 +1,29 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+﻿using GLMS.Web.Services.Contracts;
 using GLMS.Web.ViewModels;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+
 
 namespace GLMS.Web.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly IAuthApiService _authApiService;
         private readonly ILogger<AccountController> _logger;
 
         public AccountController(
-            SignInManager<IdentityUser> signInManager,
+            IAuthApiService authApiService,
             ILogger<AccountController> logger)
         {
-            _signInManager = signInManager;
+            _authApiService = authApiService;
             _logger = logger;
         }
-
         [HttpGet("account/login")]
         public IActionResult Login(string? returnUrl = null)
         {
-            // Redirect if already logged in
-            if (_signInManager.IsSignedIn(User))
+            if (User.Identity?.IsAuthenticated == true)
                 return RedirectToAction("Index", "Home");
 
             ViewData["ReturnUrl"] = returnUrl;
@@ -32,31 +34,39 @@ namespace GLMS.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var (success, token, role, error) = await _authApiService.LoginAsync(model.Email, model.Password);
+
+            if (!success)
             {
-                var result = await _signInManager.PasswordSignInAsync(
-                    model.Email,
-                    model.Password,
-                    model.RememberMe,
-                    lockoutOnFailure: false);
-
-                if (result.Succeeded)
-                {
-                    _logger.LogInformation("User {Email} logged in.", model.Email);
-                    return RedirectToLocal(returnUrl);
-                }
-
-                ModelState.AddModelError(string.Empty, "Invalid email or password.");
+                ModelState.AddModelError(string.Empty, error ?? "Invalid email or password.");
+                return View(model);
             }
 
-            return View(model);
+            // Build claims principal for the local cookie session
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, model.Email),
+                new Claim(ClaimTypes.Role, role ?? "User"),
+                new Claim("JWT", token!) // Store the JWT so we can attach it to API calls
+            };
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+            _logger.LogInformation("User {Email} logged in.", model.Email);
+            return RedirectToLocal(returnUrl);
         }
 
         [HttpPost("account/logout")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-            await _signInManager.SignOutAsync();
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             _logger.LogInformation("User logged out.");
             return RedirectToAction("Login", "Account");
         }
