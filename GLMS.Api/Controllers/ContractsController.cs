@@ -83,6 +83,7 @@ namespace GLMS.Api.Controllers
         }
 
         [HttpPatch("{id}/status")]
+        [Authorize(Roles = "Admin")]
         public IActionResult UpdateStatus(int id, [FromBody] UpdateStatusRequest request)
         {
             var contract = _contractRepository.GetById(id);
@@ -102,6 +103,7 @@ namespace GLMS.Api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public IActionResult Delete(int id)
         {
             var contract = _contractRepository.GetById(id);

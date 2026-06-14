@@ -64,6 +64,7 @@ namespace GLMS.Api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public IActionResult Delete(int id)
         {
             var existing = _clientRepository.GetById(id);
