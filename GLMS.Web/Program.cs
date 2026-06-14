@@ -1,4 +1,5 @@
 using GLMS.Web.Data;
+using GLMS.Web.Handlers;
 using GLMS.Web.Services;
 using GLMS.Web.Services.Contracts;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -6,6 +7,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Required for JwtAuthHandler to access the current user's claims
+builder.Services.AddHttpContextAccessor();
+
+// Register the JWT handler as transient so it can be added to typed clients
+builder.Services.AddTransient<JwtAuthHandler>();
 
 // Register AuthApiService with typed HttpClient pointing to GLMS.Api
 builder.Services.AddHttpClient<IAuthApiService, AuthApiService>(client =>
