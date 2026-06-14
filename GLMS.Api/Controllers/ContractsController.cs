@@ -4,6 +4,7 @@ using GLMS.Api.Factories;
 using GLMS.Api.Models;
 using GLMS.Api.Observers;
 using GLMS.Api.Repositories.Contracts;
+using GLMS.Api.Services.Contracts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GLMS.Api.Controllers
@@ -15,15 +16,18 @@ namespace GLMS.Api.Controllers
         private readonly IContractRepository _contractRepository;
         private readonly ContractFactoryResolver _factoryResolver;
         private readonly ContractSubject _contractSubject;
+        private readonly IFileService _fileService;
 
         public ContractsController(
             IContractRepository contractRepository,
             ContractFactoryResolver factoryResolver,
-            ContractSubject contractSubject)
+            ContractSubject contractSubject,
+            IFileService fileService)
         {
             _contractRepository = contractRepository;
             _factoryResolver = factoryResolver;
             _contractSubject = contractSubject;
+            _fileService = fileService;
         }
 
         [HttpGet]
@@ -107,6 +111,31 @@ namespace GLMS.Api.Controllers
             _contractRepository.Save();
 
             return NoContent();
+        }
+
+        [HttpPost("{id}/agreement")]
+        public async Task<IActionResult> UploadAgreement(int id, IFormFile agreementFile)
+        {
+            var contract = _contractRepository.GetById(id);
+            if (contract == null)
+                return NotFound();
+
+            if (agreementFile == null || agreementFile.Length == 0)
+                return BadRequest(new { error = "Please select a PDF file to upload." });
+
+            if (!_fileService.IsValidPdf(agreementFile))
+                return BadRequest(new { error = "Invalid file. Only PDF files under 10MB are accepted." });
+
+            // Delete old agreement if one exists
+            if (!string.IsNullOrEmpty(contract.AgreementFilePath))
+                _fileService.DeleteAgreement(contract.AgreementFilePath);
+
+            contract.AgreementFilePath = await _fileService.SaveAgreementAsync(agreementFile);
+
+            _contractRepository.Update(contract);
+            _contractRepository.Save();
+
+            return Ok(new { filePath = contract.AgreementFilePath });
         }
     }
 }
