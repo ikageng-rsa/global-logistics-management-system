@@ -20,6 +20,6 @@ namespace GLMS.Web.Models
         public string Region { get; set; } = string.Empty;
 
         // Navigation properties
-        public ICollection<Contract> Contracts { get; set; } = new List<Contract>();
+        public List<Contract> Contracts { get; set; } = new();
     }
 }
