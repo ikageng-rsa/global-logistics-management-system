@@ -20,6 +20,12 @@ builder.Services.AddHttpClient<IAuthApiService, AuthApiService>(client =>
     client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"]!);
 });
 
+// Register ClientApiService with typed HttpClient and JWT handler
+builder.Services.AddHttpClient<IClientApiService, ClientApiService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"]!);
+}).AddHttpMessageHandler<JwtAuthHandler>();
+
 // Configure login redirect
 builder.Services.ConfigureApplicationCookie(options =>
 {
