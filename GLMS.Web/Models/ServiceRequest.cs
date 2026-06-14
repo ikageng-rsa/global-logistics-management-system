@@ -16,10 +16,8 @@ namespace GLMS.Web.Models
         public string Description { get; set; } = string.Empty;
 
         [Required]
-        [Column(TypeName = "decimal(18,2)")]
         public decimal CostUSD { get; set; }
 
-        [Column(TypeName = "decimal(18,2)")]
         public decimal CostZAR { get; set; }
 
         [Required]

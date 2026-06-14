@@ -29,6 +29,6 @@ namespace GLMS.Web.Models
 
         // Navigation properties
         public Client? Client { get; set; }
-        public ICollection<ServiceRequest> ServiceRequests { get; set; } = new List<ServiceRequest>();
+        public List<ServiceRequest> ServiceRequests { get; set; } = new();
     }
 }
