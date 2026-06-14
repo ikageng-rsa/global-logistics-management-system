@@ -1,10 +1,8 @@
-using GLMS.Web.Data;
 using GLMS.Web.Handlers;
 using GLMS.Web.Services;
 using GLMS.Web.Services.Contracts;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +23,7 @@ builder.Services.AddHttpClient<IClientApiService, ClientApiService>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"]!);
 }).AddHttpMessageHandler<JwtAuthHandler>();
+
 // Register ContractApiService with typed HttpClient and JWT handler
 builder.Services.AddHttpClient<IContractApiService, ContractApiService>(client =>
 {
@@ -37,6 +36,11 @@ builder.Services.AddHttpClient<IServiceRequestApiService, ServiceRequestApiServi
     client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"]!);
 }).AddHttpMessageHandler<JwtAuthHandler>();
 
+// Register UserApiService with typed HttpClient and JWT handler
+builder.Services.AddHttpClient<IUserApiService, UserApiService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"]!);
+}).AddHttpMessageHandler<JwtAuthHandler>();
 
 // Configure login redirect
 builder.Services.ConfigureApplicationCookie(options =>
