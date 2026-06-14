@@ -12,40 +12,36 @@ namespace GLMS.Web.Controllers
 
     public class ServiceRequestsController : Controller
     {
-        private readonly IServiceRequestRepository _serviceRequestRepository;
-        private readonly IContractRepository _contractRepository;
-        private readonly ICurrencyService _currencyService;
+        private readonly IServiceRequestApiService _serviceRequestApiService;
+        private readonly IContractApiService _contractApiService;
 
         public ServiceRequestsController(
-            IServiceRequestRepository serviceRequestRepository,
-            IContractRepository contractRepository,
-            ICurrencyService currencyService
-        )
+            IServiceRequestApiService serviceRequestApiService,
+            IContractApiService contractApiService)
         {
-            _serviceRequestRepository = serviceRequestRepository;
-            _contractRepository = contractRepository;
-            _currencyService = currencyService;
+            _serviceRequestApiService = serviceRequestApiService;
+            _contractApiService = contractApiService;
         }
 
         [HttpGet("service-requests")]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var requests = _serviceRequestRepository.GetAll();
+            var requests = await _serviceRequestApiService.GetAllAsync();
             return View(requests);
         }
 
         [HttpGet("service-requests/details/{id}")]
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            var request = _serviceRequestRepository.GetById(id);
+            var request = await _serviceRequestApiService.GetByIdAsync(id);
             if (request == null) return NotFound();
             return View(request);
         }
 
         [HttpGet("service-requests/create")]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            PopulateContractDropdown();
+            await PopulateContractDropdown();
             return View();
         }
 
@@ -53,44 +49,29 @@ namespace GLMS.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ServiceRequest serviceRequest)
         {
-            // Workflow validation — block creation on Expired or OnHold contracts
-            var contract = _contractRepository.GetById(serviceRequest.ContractId);
-
-            if (contract == null)
+            if (!ModelState.IsValid)
             {
-                ModelState.AddModelError(string.Empty, "Selected contract does not exist.");
-                PopulateContractDropdown();
+                await PopulateContractDropdown();
                 return View(serviceRequest);
             }
 
-            if (contract.Status == ContractStatus.Expired ||
-                contract.Status == ContractStatus.OnHold)
-            {
-                ModelState.AddModelError(string.Empty,
-                    $"Service requests cannot be created for a contract with status: {contract.Status}.");
-                PopulateContractDropdown();
-                return View(serviceRequest);
-            }
+            var (success, error) = await _serviceRequestApiService.CreateAsync(serviceRequest);
 
-            if (ModelState.IsValid)
+            if (success)
             {
-                serviceRequest.CostZAR = await _currencyService.ConvertUsdToZarAsync(serviceRequest.CostUSD);
-                
-                TempData["Success"] = $"Service request created. ${serviceRequest.CostUSD:N2} USD = R {serviceRequest.CostZAR:N2} ZAR.";
-
-                _serviceRequestRepository.Add(serviceRequest);
-                _serviceRequestRepository.Save();
+                TempData["Success"] = "Service request created successfully.";
                 return RedirectToAction(nameof(Index));
             }
 
-            PopulateContractDropdown();
+            ModelState.AddModelError(string.Empty, error ?? "Failed to create service request.");
+            await PopulateContractDropdown();
             return View(serviceRequest);
         }
 
         [HttpGet("service-requests/edit/{id}")]
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var request = _serviceRequestRepository.GetById(id);
+            var request = await _serviceRequestApiService.GetByIdAsync(id);
             if (request == null) return NotFound();
             return View(request);
         }
@@ -101,62 +82,48 @@ namespace GLMS.Web.Controllers
         {
             if (id != serviceRequest.Id) return BadRequest();
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+                return View(serviceRequest);
+
+            var (success, error) = await _serviceRequestApiService.UpdateAsync(serviceRequest);
+
+            if (success)
             {
-                // Block edits if the contract is Expired or OnHold
-                var contract = _contractRepository.GetById(serviceRequest.ContractId);
-
-                if (contract == null)
-                {
-                    ModelState.AddModelError(string.Empty, "Associated contract not found.");
-                    return View(serviceRequest);
-                }
-
-                if (contract.Status == ContractStatus.Expired ||
-                    contract.Status == ContractStatus.OnHold)
-                {
-                    ModelState.AddModelError(string.Empty,
-                        $"This service request cannot be edited because the contract is {contract.Status}.");
-                    return View(serviceRequest);
-                }
-
-                serviceRequest.CostZAR = await _currencyService.ConvertUsdToZarAsync(serviceRequest.CostUSD);
-                _serviceRequestRepository.Update(serviceRequest);
-                _serviceRequestRepository.Save();
-
                 TempData["Success"] = "Service request updated successfully.";
                 return RedirectToAction(nameof(Index));
             }
 
+            ModelState.AddModelError(string.Empty, error ?? "Failed to update service request.");
             return View(serviceRequest);
         }
 
         [HttpGet("service-requests/delete/{id}")]
-        public IActionResult Delete(int id)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delete(int id)
         {
-            var request = _serviceRequestRepository.GetById(id);
+            var request = await _serviceRequestApiService.GetByIdAsync(id);
             if (request == null) return NotFound();
             return View(request);
         }
 
         [HttpPost("service-requests/delete/{id}"), ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            _serviceRequestRepository.Delete(id);
-            _serviceRequestRepository.Save();
+            await _serviceRequestApiService.DeleteAsync(id);
+            TempData["Success"] = "Service request deleted.";
             return RedirectToAction(nameof(Index));
         }
 
-        private void PopulateContractDropdown()
+        private async Task PopulateContractDropdown()
         {
             // Only show Active contracts in the dropdown
-            var activeContracts = _contractRepository.GetAll()
-                .Where(c => c.Status == ContractStatus.Active)
+            var activeContracts = (await _contractApiService.GetAllAsync(ContractStatus.Active))
                 .Select(c => new
                 {
                     c.Id,
-                    Label = $"{c.Client!.Name} — {c.ServiceLevel} ({c.StartDate:dd MMM yyyy} to {c.EndDate:dd MMM yyyy})"
+                    Label = $"{c.Client?.Name} — {c.ServiceLevel} ({c.StartDate:dd MMM yyyy} to {c.EndDate:dd MMM yyyy})"
                 })
                 .ToList();
 
