@@ -15,135 +15,105 @@ namespace GLMS.Web.Controllers
 
     public class ContractsController : Controller
     {
-        private readonly IContractRepository _contractRepository;
-        private readonly IClientRepository _clientRepository;
-        private readonly ContractFactoryResolver _factoryResolver;
-        private readonly ContractSubject _contractSubject;
-        private readonly IFileService _fileService;
+        private readonly IContractApiService _contractApiService;
+        private readonly IClientApiService _clientApiService;
 
         public ContractsController(
-            IContractRepository contractRepository,
-            IClientRepository clientRepository,
-            ContractFactoryResolver factoryResolver,
-            ContractSubject contractSubject,
-            IFileService fileService)
+            IContractApiService contractApiService,
+            IClientApiService clientApiService)
         {
-            _contractRepository = contractRepository;
-            _clientRepository = clientRepository;
-            _factoryResolver = factoryResolver;
-            _contractSubject = contractSubject;
-            _fileService = fileService;
+            _contractApiService = contractApiService;
+            _clientApiService = clientApiService;
         }
 
         [HttpGet("contracts")]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var contracts = _contractRepository.GetAll();
-
-            ViewBag.Clients = new SelectList(
-                _contractRepository.GetAll(),
-                "Id",
-                "Name"
-            );
+            var contracts = await _contractApiService.GetAllAsync();
             return View(contracts);
         }
 
         [HttpGet("contracts/details/{id}")]
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            var contract = _contractRepository.GetById(id);
+            var contract = await _contractApiService.GetByIdAsync(id);
             if (contract == null) return NotFound();
             return View(contract);
         }
 
         [HttpGet("contracts/create")]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            PopulateClientDropdown();
+            await PopulateClientDropdown();
             return View();
         }
 
         [HttpPost("contracts/create")]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(int clientId, DateTime startDate, DateTime endDate, ServiceLevel serviceLevel)
+        public async Task<IActionResult> Create(int clientId, DateTime startDate, DateTime endDate, ServiceLevel serviceLevel)
         {
-            try
+            var (success, error, _) = await _contractApiService.CreateAsync(clientId, startDate, endDate, serviceLevel);
+
+            if (success)
             {
-                // Factory Method pattern — correct factory selected by service level
-                var factory = _factoryResolver.Resolve(serviceLevel);
-                var contract = factory.CreateContract(clientId, startDate, endDate);
-
-                _contractRepository.Add(contract);
-                _contractRepository.Save();
-
                 TempData["Success"] = "Contract created successfully.";
-
                 return RedirectToAction(nameof(Index));
             }
-            catch (ArgumentException ex)
-            {
-                ModelState.AddModelError(string.Empty, ex.Message);
-                PopulateClientDropdown();
-                return View();
-            }
+
+            ModelState.AddModelError(string.Empty, error ?? "Failed to create contract.");
+            await PopulateClientDropdown();
+            return View();
         }
 
         [HttpGet("contracts/edit/{id}")]
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var contract = _contractRepository.GetById(id);
+            var contract = await _contractApiService.GetByIdAsync(id);
             if (contract == null) return NotFound();
-            PopulateClientDropdown();
             return View(contract);
         }
 
         [HttpPost("contracts/edit/{id}")]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, Contract contract)
+        public async Task<IActionResult> Edit(int id, Contract contract)
         {
             if (id != contract.Id) return BadRequest();
 
-            if (ModelState.IsValid)
+            var success = await _contractApiService.UpdateStatusAsync(id, contract.Status);
+
+            if (success)
             {
-                // Observer pattern — notify all observers of status change
-                _contractSubject.Notify(contract);
-
-                _contractRepository.Update(contract);
-                _contractRepository.Save();
-
-                TempData["Success"] = "Contract updated successfully.";
+                TempData["Success"] = "Contract updated.";
                 return RedirectToAction(nameof(Index));
             }
 
-            PopulateClientDropdown();
+            ModelState.AddModelError(string.Empty, "Failed to update contract.");
             return View(contract);
         }
 
         [HttpGet("contracts/delete/{id}")]
-        public IActionResult Delete(int id)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delete(int id)
         {
-            var contract = _contractRepository.GetById(id);
+            var contract = await _contractApiService.GetByIdAsync(id);
             if (contract == null) return NotFound();
-
-            TempData["Success"] = "Contract deleted successfully.";
             return View(contract);
         }
 
         [HttpPost("contracts/delete/{id}"), ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            _contractRepository.Delete(id);
-            _contractRepository.Save();
-
-            TempData["Success"] = "Contact deleted successfully.";
+            await _contractApiService.DeleteAsync(id);
+            TempData["Success"] = "Contract deleted.";
             return RedirectToAction(nameof(Index));
         }
 
         [HttpGet("contracts/upload-agreement/{id}")]
-        public IActionResult UploadAgreement(int id)
+        public async Task<IActionResult> UploadAgreement(int id)
         {
-            var contract = _contractRepository.GetById(id);
+            var contract = await _contractApiService.GetByIdAsync(id);
             if (contract == null) return NotFound();
             return View(contract);
         }
@@ -152,39 +122,29 @@ namespace GLMS.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UploadAgreement(int id, IFormFile agreementFile)
         {
-            var contract = _contractRepository.GetById(id);
-            if (contract == null) return NotFound();
-
             if (agreementFile == null || agreementFile.Length == 0)
             {
                 ModelState.AddModelError(string.Empty, "Please select a PDF file to upload.");
+                var contract = await _contractApiService.GetByIdAsync(id);
                 return View(contract);
             }
 
-            if (!_fileService.IsValidPdf(agreementFile))
+            var (success, _) = await _contractApiService.UploadAgreementAsync(id, agreementFile);
+
+            if (success)
             {
-                ModelState.AddModelError(string.Empty,
-                    "Invalid file. Only PDF files under 10MB are accepted.");
-                return View(contract);
+                TempData["Success"] = "Agreement uploaded successfully.";
+                return RedirectToAction(nameof(Details), new { id });
             }
 
-            // Delete old agreement if one exists
-            if (!string.IsNullOrEmpty(contract.AgreementFilePath))
-                _fileService.DeleteAgreement(contract.AgreementFilePath);
-
-            // Save new file and store the path
-            contract.AgreementFilePath = await _fileService.SaveAgreementAsync(agreementFile);
-
-            _contractRepository.Update(contract);
-            _contractRepository.Save();
-
-            TempData["Success"] = "Agreement uploaded successfully.";
-            return RedirectToAction(nameof(Details), new { id = contract.Id });
+            ModelState.AddModelError(string.Empty, "Invalid file. Only PDF files under 10MB are accepted.");
+            var failedContract = await _contractApiService.GetByIdAsync(id);
+            return View(failedContract);
         }
 
-        private void PopulateClientDropdown()
+        private async Task PopulateClientDropdown()
         {
-            var clients = _clientRepository.GetAll();
+            var clients = await _clientApiService.GetAllAsync();
             ViewBag.Clients = new SelectList(clients, "Id", "Name");
         }
     }
