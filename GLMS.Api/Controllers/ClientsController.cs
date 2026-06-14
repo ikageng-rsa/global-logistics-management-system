@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using GLMS.Api.Models;
+﻿using GLMS.Api.Models;
 using GLMS.Api.Repositories.Contracts;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GLMS.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class ClientsController : ControllerBase
     {
         private readonly IClientRepository _clientRepository;

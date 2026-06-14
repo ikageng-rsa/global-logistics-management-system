@@ -5,12 +5,14 @@ using GLMS.Api.Models;
 using GLMS.Api.Observers;
 using GLMS.Api.Repositories.Contracts;
 using GLMS.Api.Services.Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GLMS.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class ContractsController : ControllerBase
     {
         private readonly IContractRepository _contractRepository;
