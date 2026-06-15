@@ -8,6 +8,9 @@ namespace GLMS.Api.Tests.Helpers
 {
     public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
+        // Unique DB name per factory instance prevents shared state between test classes
+        private readonly string _dbName = Guid.NewGuid().ToString();
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.ConfigureServices(services =>
@@ -19,10 +22,10 @@ namespace GLMS.Api.Tests.Helpers
                 if (descriptor != null)
                     services.Remove(descriptor);
 
-                // Replace with in-memory database
+                // Replace with uniquely named in-memory database
                 services.AddDbContext<AppDbContext>(options =>
                 {
-                    options.UseInMemoryDatabase("TestDb");
+                    options.UseInMemoryDatabase(_dbName);
                 });
 
                 // Build provider and seed
@@ -32,7 +35,6 @@ namespace GLMS.Api.Tests.Helpers
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 db.Database.EnsureCreated();
 
-                // Seed roles and users synchronously
                 SeedData.SeedRolesAndUsersAsync(scope.ServiceProvider)
                     .GetAwaiter()
                     .GetResult();
