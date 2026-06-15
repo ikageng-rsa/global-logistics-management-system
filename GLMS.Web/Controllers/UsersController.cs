@@ -1,98 +1,74 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using GLMS.Web.Services.Contracts;
+using GLMS.Web.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using GLMS.Web.ViewModels;
 
 namespace GLMS.Web.Controllers
 {
     [Authorize(Roles = "Admin")]
     public class UsersController : Controller
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IUserApiService _userApiService;
 
-        public UsersController(
-            UserManager<IdentityUser> userManager,
-            RoleManager<IdentityRole> roleManager)
+        public UsersController(IUserApiService userApiService)
         {
-            _userManager = userManager;
-            _roleManager = roleManager;
+            _userApiService = userApiService;
         }
+
 
         [HttpGet("users")]
         public async Task<IActionResult> Index()
         {
-            var users = _userManager.Users.ToList();
-            var userList = new List<UserListViewModel>();
-
-            foreach (var user in users)
-            {
-                var roles = await _userManager.GetRolesAsync(user);
-                userList.Add(new UserListViewModel
-                {
-                    Id = user.Id,
-                    Email = user.Email!,
-                    Role = roles.FirstOrDefault() ?? "No Role"
-                });
-            }
-
-            return View(userList);
+            var users = await _userApiService.GetAllAsync();
+            return View(users);
         }
 
         [HttpGet("users/create")]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            PopulateRoleDropdown();
+            await PopulateRoleDropdown();
             return View();
         }
 
-        // POST: /Users/Create
-        [HttpPost]
+
+        [HttpPost('users/create')]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(UserCreateViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var user = new IdentityUser
-                {
-                    UserName = model.Email,
-                    Email = model.Email,
-                    EmailConfirmed = true
-                };
+                var (success, error) = await _userApiService.CreateAsync(model);
 
-                var result = await _userManager.CreateAsync(user, model.Password);
-
-                if (result.Succeeded)
+                if (success)
                 {
-                    await _userManager.AddToRoleAsync(user, model.Role);
                     TempData["Success"] = $"User {model.Email} created successfully.";
                     return RedirectToAction(nameof(Index));
                 }
 
-                foreach (var error in result.Errors)
-                    ModelState.AddModelError(string.Empty, error.Description);
+                ModelState.AddModelError(string.Empty, error ?? "Failed to create user.");
             }
 
-            PopulateRoleDropdown();
+            await PopulateRoleDropdown();
             return View(model);
         }
 
         [HttpGet("users/edit/{id}")]
         public async Task<IActionResult> Edit(string id)
         {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user == null) return NotFound();
+            var users = await _userApiService.GetAllAsync();
+            var user = users.FirstOrDefault(u => u.Id == id);
 
-            var roles = await _userManager.GetRolesAsync(user);
+            if (user == null) return NotFound();
 
             var model = new UserEditViewModel
             {
                 Id = user.Id,
-                Email = user.Email!,
-                Role = roles.FirstOrDefault() ?? string.Empty
+                Email = user.Email,
+                Role = user.Role
             };
 
-            PopulateRoleDropdown();
+            await PopulateRoleDropdown();
             return View(model);
         }
 
@@ -102,77 +78,57 @@ namespace GLMS.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = await _userManager.FindByIdAsync(model.Id);
-                if (user == null) return NotFound();
+                var (success, error) = await _userApiService.UpdateAsync(model);
 
-                // Update email
-                user.Email = model.Email;
-                user.UserName = model.Email;
-                await _userManager.UpdateAsync(user);
-
-                // Update role
-                var currentRoles = await _userManager.GetRolesAsync(user);
-                await _userManager.RemoveFromRolesAsync(user, currentRoles);
-                await _userManager.AddToRoleAsync(user, model.Role);
-
-                // Update password if provided
-                if (!string.IsNullOrEmpty(model.NewPassword))
+                if (success)
                 {
-                    var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                    await _userManager.ResetPasswordAsync(user, token, model.NewPassword);
+                    TempData["Success"] = $"User {model.Email} updated successfully.";
+                    return RedirectToAction(nameof(Index));
                 }
 
-                TempData["Success"] = $"User {model.Email} updated successfully.";
-                return RedirectToAction(nameof(Index));
+                ModelState.AddModelError(string.Empty, error ?? "Failed to update user.");
             }
 
-            PopulateRoleDropdown();
+            await PopulateRoleDropdown();
             return View(model);
         }
 
         [HttpGet("users/delete/{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            var user = await _userManager.FindByIdAsync(id);
+            var users = await _userApiService.GetAllAsync();
+            var user = users.FirstOrDefault(u => u.Id == id);
+
             if (user == null) return NotFound();
 
-            var roles = await _userManager.GetRolesAsync(user);
-
-            var model = new UserListViewModel
+            return View(new UserListViewModel
             {
                 Id = user.Id,
-                Email = user.Email!,
-                Role = roles.FirstOrDefault() ?? "No Role"
-            };
-
-            return View(model);
+                Email = user.Email,
+                Role = user.Role
+            });
         }
 
         [HttpPost("users/delete/{id}"), ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            // Prevent admin from deleting their own account
-            var currentUser = await _userManager.GetUserAsync(User);
-            if (currentUser?.Id == id)
+            var (success, error) = await _userApiService.DeleteAsync(id);
+
+            if (!success)
             {
-                TempData["Error"] = "You cannot delete your own account.";
+                TempData["Error"] = error ?? "Failed to delete user.";
                 return RedirectToAction(nameof(Index));
             }
-
-            var user = await _userManager.FindByIdAsync(id);
-            if (user != null)
-                await _userManager.DeleteAsync(user);
 
             TempData["Success"] = "User deleted successfully.";
             return RedirectToAction(nameof(Index));
         }
 
-        private void PopulateRoleDropdown()
+        private async Task PopulateRoleDropdown()
         {
-            ViewBag.Roles = _roleManager.Roles
-                .Select(r => r.Name)
-                .ToList();
+            var roles = await _userApiService.GetRolesAsync();
+            ViewBag.Roles = roles.ToList();
         }
     }
 }
