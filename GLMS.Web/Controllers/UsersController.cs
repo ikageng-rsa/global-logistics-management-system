@@ -32,7 +32,7 @@ namespace GLMS.Web.Controllers
         }
 
 
-        [HttpPost('users/create')]
+        [HttpPost("users/create")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(UserCreateViewModel model)
         {
