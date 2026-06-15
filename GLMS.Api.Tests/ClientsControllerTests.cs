@@ -21,5 +21,18 @@ namespace GLMS.Api.Tests
             // Assert that endpoint is protected, no access without token
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
+
+        [Fact]
+        public async Task GetClients_WithValidToken_Returns200()
+        {
+            var token = await TestAuthHelper.GetAdminTokenAsync(_client);
+            _client.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.GetAsync("api/clients");
+
+            // Assert that status is okay due to valid token received
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
     }
 }
