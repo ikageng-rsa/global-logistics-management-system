@@ -118,7 +118,6 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 }
-}
 
 // Seed roles and default users
 using (var scope = app.Services.CreateScope())
