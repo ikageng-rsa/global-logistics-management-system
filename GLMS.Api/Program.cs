@@ -113,10 +113,13 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Apply migrations automatically on startup (skipped for in-memory databases)
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+
+    if (db.Database.IsRelational())
+        db.Database.Migrate();
 }
 
 // Seed roles and default users
