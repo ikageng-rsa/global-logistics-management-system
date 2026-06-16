@@ -1,5 +1,4 @@
 ﻿using GLMS.Web.Models;
-using GLMS.Web.Repositories.Contracts;
 using GLMS.Web.Services.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

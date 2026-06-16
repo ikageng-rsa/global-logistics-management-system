@@ -1,7 +1,6 @@
 ﻿using GLMS.Web.Services.Contracts;
 using GLMS.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GLMS.Web.Controllers
