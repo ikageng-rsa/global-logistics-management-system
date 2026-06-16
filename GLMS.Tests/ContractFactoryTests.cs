@@ -1,6 +1,6 @@
-﻿using GLMS.Web.Enums;
-using GLMS.Web.Factories;
-using GLMS.Web.Models;
+﻿using GLMS.Api.Enums;
+using GLMS.Api.Factories;
+using GLMS.Api.Models;
 
 namespace GLMS.Tests
 {
