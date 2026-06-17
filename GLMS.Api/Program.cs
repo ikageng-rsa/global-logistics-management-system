@@ -145,7 +145,11 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
     if (db.Database.IsRelational())
-        db.Database.Migrate();
+    {
+        var pending = db.Database.GetPendingMigrations();
+        if (pending.Any())
+            db.Database.Migrate();
+    }
 }
 
 // Seed roles and default users
